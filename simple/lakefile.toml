@@ -1,0 +1,16 @@
+name = "forsythe_simple"
+version = "0.1.0"
+defaultTargets = ["Forsythe"]
+testDriver = "ForsytheTest"
+lintDriver = "batteries/runLinter"
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"
+rev = "v4.32.1"
+
+[[lean_lib]]
+name = "Forsythe"
+
+[[lean_lib]]
+name = "ForsytheTest"

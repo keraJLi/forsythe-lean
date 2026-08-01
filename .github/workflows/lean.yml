@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - "original/**"
+      - "simple/**"
       - ".github/workflows/lean.yml"
   pull_request:
     paths:
       - "original/**"
+      - "simple/**"
       - ".github/workflows/lean.yml"
   workflow_dispatch:
 
@@ -19,11 +21,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify-original:
+  verify:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [original, simple]
     defaults:
       run:
-        working-directory: original
+        working-directory: ${{ matrix.project }}
 
     steps:
       - name: Check out repository
@@ -33,7 +39,7 @@ jobs:
         uses: leanprover/lean-action@v1
         with:
           auto-config: false
-          lake-package-directory: original
+          lake-package-directory: ${{ matrix.project }}
           use-mathlib-cache: false
 
       - name: Download mathlib cache
