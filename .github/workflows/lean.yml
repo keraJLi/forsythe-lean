@@ -1,0 +1,55 @@
+name: Lean verification
+
+on:
+  push:
+    paths:
+      - "original/**"
+      - ".github/workflows/lean.yml"
+  pull_request:
+    paths:
+      - "original/**"
+      - ".github/workflows/lean.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lean-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-original:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: original
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install pinned Lean toolchain
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          lake-package-directory: original
+          use-mathlib-cache: false
+
+      - name: Download mathlib cache
+        run: lake exe cache get
+
+      - name: Reject proof placeholders
+        run: ./scripts/no_placeholders.sh
+
+      - name: Check aggregators and Blueprint coverage
+        run: ./scripts/check_coverage.sh
+
+      - name: Build with warnings as errors
+        run: lake build --wfail
+
+      - name: Run compile-time tests
+        run: lake test
+
+      - name: Run package linter
+        run: lake lint
